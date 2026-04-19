@@ -115,6 +115,7 @@ export class AppComponent implements OnInit {
     public tiledeskAuthService: TiledeskAuthService,
     public presenceService: PresenceService,
     private router: Router,
+    private ngZone: NgZone,
     private route: ActivatedRoute,
     private navService: NavProxyService,
     // public chatPresenceHandler: ChatPresenceHandler,
@@ -524,7 +525,9 @@ export class AppComponent implements OnInit {
     this.platform.ready().then(() => {
       let platform = this.getPlatformName();
 
-      this.initDeeplinks();
+      if (this.platform.is('hybrid') || this.platform.is('cordova') || this.platform.is('capacitor')) {
+        this.initDeeplinks();
+      }
       // this.setLanguage();
 
       if (this.splashScreen) {
@@ -608,6 +611,10 @@ export class AppComponent implements OnInit {
   }
 
   initDeeplinks(){
+    return; // DISABLED_FOR_WEB_DEBUG
+    if (!(this.platform.is('hybrid') || this.platform.is('cordova') || this.platform.is('capacitor'))) {
+      return;
+    }
     this.deeplinks.route({'/conversation-detail': ConversationListPage}).subscribe(match => {
       this.logger.log('[APP-COMP] deeplinks match route', JSON.stringify(match.$args))
       if(match.$args && match.$args.jwt){
@@ -615,7 +622,20 @@ export class AppComponent implements OnInit {
         this.initAuthentication()
       }
     }, (nomatch)=> {
-      this.logger.error("[APP-COMP] deeplinks: Got a deeplink that didn't match", nomatch);
+            const link = (nomatch && nomatch.$link) ? nomatch.$link : {};
+            const fragmentStr = typeof link.fragment === 'string' ? link.fragment : '';
+            const pathStr = typeof link.path === 'string' ? link.path : '';
+            const pathNorm = pathStr.replace(/\/+$/, '') || '/';
+
+            if ((pathStr === '/chat/' || pathNorm === '/chat') && fragmentStr.startsWith('#/conversation-detail')) {
+              const internalPath = fragmentStr.replace(/^#/, '');
+              this.ngZone.run(() => {
+                this.router.navigateByUrl(internalPath);
+              });
+              return;
+            }
+
+            this.logger.error("[APP-COMP] deeplinks: Got a deeplink that didn't match", nomatch);
     })
   }
 

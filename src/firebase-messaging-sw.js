@@ -17,7 +17,8 @@ self.addEventListener('notificationclick', event => {
     event.notification.data.FCM_MSG.notification.click_action
   )
   {
-    baseurl = event.notification.data.FCM_MSG.notification.click_action;
+    const clickAction = (event.notification.data.FCM_MSG.notification && event.notification.data.FCM_MSG.notification.click_action) || '';
+    baseurl = clickAction.split('#')[0];
     console.log('FIREBASE-NOTIFICATION (FIREBASE-MESSAGING-SW) notificationclick  BASE-URL ', baseurl);
   }
   else {

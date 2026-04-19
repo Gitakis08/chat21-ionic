@@ -16,6 +16,7 @@ RUN mkdir -p ./www
 RUN cordova platform add browser@latest
 
 RUN ionic cordova build browser
+RUN sed -i 's#<script src="cordova.js"></script>##g; s#<script src="cordova.js" defer></script>##g' /app/platforms/browser/www/index.html
 
 ### STAGE 2: Setup ###
 
