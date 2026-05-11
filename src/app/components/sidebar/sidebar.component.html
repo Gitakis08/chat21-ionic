@@ -205,6 +205,15 @@
       </div>
 
 
+      <div matTooltipClass="custom-mat-tooltip" [matTooltip]="BRAND_BASE_INFO['COMPANY_NAME']" class="logoBrand"
+        #tooltip="matTooltip" matTooltipPosition='right' matTooltipHideDelay="100">
+        <!-- ------------------------------------------- -->
+        <!-- LOGO BRAND  (click)="goToOfficialSite()" -->
+        <!-- ------------------------------------------- -->
+        <a target="_blank" href="{{ tiledesk_url }}" class="customAncor">
+          <img [src]="LOGOS_ITEMS['COMPANY_LOGO_NO_TEXT'].icon">
+        </a>
+      </div>
 
     </div>
 
