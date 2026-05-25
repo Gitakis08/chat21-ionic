@@ -44,6 +44,7 @@ import { conversationToMessage } from 'src/chat21-core/utils/utils-message';
 import { ProjectService } from './services/projects/project.service';
 import { ContactsService } from './services/contacts/contacts.service';
 import { TiledeskService } from './services/tiledesk/tiledesk.service';
+import { ProjectUsersService } from './services/project_users/project-users.service';
 
 @Component({
   selector: 'app-root',
@@ -142,6 +143,7 @@ export class AppComponent implements OnInit {
     /**TILEDESK SERVICES */
     private tiledeskService: TiledeskService,
     private projectService: ProjectService,
+    private projectUsersService: ProjectUsersService,
     private contactsService: ContactsService
   ) {
 
@@ -342,7 +344,7 @@ export class AppComponent implements OnInit {
 
       if (event && event.data && event.data.action && event.data.parameter) {
         if (event.data.action === 'resolveConversation') {
-          this.conversationsHandlerService.archiveConversation(event.data.patameter)
+          this.conversationsHandlerService.archiveConversation(event.data.parameter)
         }
       }
       // if (event && event.data && event.data.action && event.data.parameter) {
@@ -1201,6 +1203,7 @@ export class AppComponent implements OnInit {
 
     this.tiledeskService.initialize(serverBaseURL)
     this.projectService.initialize(serverBaseURL)
+    this.projectUsersService.initialize(serverBaseURL)
     this.contactsService.initialize(serverBaseURL)
 
 
@@ -1365,7 +1368,6 @@ export class AppComponent implements OnInit {
 
   subscribeUnservedRequestCount = (unservedRequestCount) => {
     if(unservedRequestCount && unservedRequestCount > 0){
-      this.logger.debug("subscribeUnservedRequestCount appIsInitialized::::",this.isInitialized)
       if(this.isInitialized){
         this.manageTabNotification('conv_unassigned', true, unservedRequestCount) //sound and alternate title
       }
