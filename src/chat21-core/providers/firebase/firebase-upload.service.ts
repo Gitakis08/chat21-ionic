@@ -17,6 +17,8 @@ import { LoggerService } from '../abstract/logger.service';
 // models
 import { UploadModel } from '../../models/upload';
 
+const USER_PHOTO_EXISTS_CACHE_PREFIX = 'chat21:user-photo-exists:';
+
 // @Injectable({
 //   providedIn: 'root'
 // })
@@ -254,6 +256,7 @@ export class FirebaseUploadService extends UploadService {
         that.logger.debug('[FIREBASEUploadSERVICE] Upload is complete', upload);
        
         const downloadURL = uploadTask.snapshot.ref.getDownloadURL();
+        that.cacheUserPhotoExists(userId, true);
         resolve({downloadURL : downloadURL, url: downloadURL})
 
         // that.BSStateUpload.next({upload: upload});
@@ -347,6 +350,7 @@ export class FirebaseUploadService extends UploadService {
     //AWAIT to return ALL the promise delete()
     return new Promise((resolve, reject)=> {
       Promise.all(arrayPromise).then(()=>{
+        this.cacheUserPhotoExists(userId, false);
         resolve(true)
       }).catch((error)=>{
         reject(error)
@@ -354,5 +358,16 @@ export class FirebaseUploadService extends UploadService {
     })
   }
 
+  private cacheUserPhotoExists(userId: string, exists: boolean): void {
+    try {
+      localStorage.setItem(this.getUserPhotoExistsCacheKey(userId), String(exists));
+    } catch (err) {
+      this.logger.error('[FIREBASEUploadSERVICE] Error caching user photo existence', err);
+    }
+  }
+
+  private getUserPhotoExistsCacheKey(userId: string): string {
+    return `${USER_PHOTO_EXISTS_CACHE_PREFIX}${userId}`;
+  }
 
 }

@@ -26,6 +26,7 @@ import { ProjectUser } from 'src/chat21-core/models/projectUsers';
   styleUrls: ['./sidebar-user-details.component.scss'],
 })
 export class SidebarUserDetailsComponent implements OnInit, OnChanges, OnDestroy {
+  private readonly userPhotoExistsCachePrefix = 'chat21:user-photo-exists:';
   // HAS_CLICKED_OPEN_USER_DETAIL: boolean = false;
   // @Output() onCloseUserDetailsSidebar = new EventEmitter();
 
@@ -145,9 +146,7 @@ export class SidebarUserDetailsComponent implements OnInit, OnChanges, OnDestroy
             this.user = currentUser
             this.createUserAvatar(this.user);
             this.getCurrentChatLangAndTranslateLabels(this.user);
-            this.photo_profile_URL = this.imageRepoService.getImagePhotoUrl(this.user.uid)
-            this.logger.log('[SIDEBAR-USER-DETAILS] photo_profile_URL ', this.photo_profile_URL);
-            this.checkIfExistPhotoProfile(this.photo_profile_URL)
+            this.initializeUserPhoto(this.user.uid)
           }
         } else {
           this.logger.error('[SIDEBAR-USER-DETAILS] currentUser not found in storage ')
@@ -156,8 +155,23 @@ export class SidebarUserDetailsComponent implements OnInit, OnChanges, OnDestroy
     })
   }
 
-  checkIfExistPhotoProfile(imageUrl) {
+  private initializeUserPhoto(uid: string) {
+    this.photo_profile_URL = this.imageRepoService.getImagePhotoUrl(uid)
+    this.logger.log('[SIDEBAR-USER-DETAILS] photo_profile_URL ', this.photo_profile_URL);
+
+    const cachedPhotoExists = this.getCachedUserPhotoExists(uid)
+    if (cachedPhotoExists !== null) {
+      this.USER_PHOTO_PROFILE_EXIST = cachedPhotoExists
+      this.logger.log('[SIDEBAR-USER-DETAILS] user photo existence restored from cache ', cachedPhotoExists)
+      return
+    }
+
+    this.checkIfExistPhotoProfile(uid, this.photo_profile_URL)
+  }
+
+  private checkIfExistPhotoProfile(uid: string, imageUrl: string) {
     this.verifyImageURL(imageUrl, (imageExists) => {
+      this.cacheUserPhotoExists(uid, imageExists)
       
       if (imageExists === true) {
         this.USER_PHOTO_PROFILE_EXIST = true;
@@ -170,8 +184,35 @@ export class SidebarUserDetailsComponent implements OnInit, OnChanges, OnDestroy
     })
   }
 
+  private getCachedUserPhotoExists(uid: string): boolean | null {
+    try {
+      const cachedValue = localStorage.getItem(this.getUserPhotoExistsCacheKey(uid))
+      if (cachedValue === 'true') {
+        return true
+      }
+      if (cachedValue === 'false') {
+        return false
+      }
+    } catch (err) {
+      this.logger.error('[SIDEBAR-USER-DETAILS] Error getting cached user photo existence', err)
+    }
+    return null
+  }
 
-  verifyImageURL(image_url, callBack) {
+  private cacheUserPhotoExists(uid: string, exists: boolean): void {
+    try {
+      localStorage.setItem(this.getUserPhotoExistsCacheKey(uid), String(exists))
+    } catch (err) {
+      this.logger.error('[SIDEBAR-USER-DETAILS] Error caching user photo existence', err)
+    }
+  }
+
+  private getUserPhotoExistsCacheKey(uid: string): string {
+    return `${this.userPhotoExistsCachePrefix}${uid}`
+  }
+
+
+  private verifyImageURL(image_url: string, callBack: (imageExists: boolean) => void): void {
     const img = new Image();
     img.src = image_url;
     img.onload = function () {

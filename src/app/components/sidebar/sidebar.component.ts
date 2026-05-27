@@ -26,6 +26,7 @@ import { ProjectUsersService } from 'src/app/services/project_users/project-user
   styleUrls: ['./sidebar.component.scss'],
 })
 export class SidebarComponent implements OnInit {
+  private readonly userPhotoExistsCachePrefix = 'chat21:user-photo-exists:';
 
   private logger: LoggerService = LoggerInstance.getInstance();
 
@@ -158,9 +159,7 @@ setQueryParamsForAll(queryParams: any) {
           this.logger.log('[SIDEBAR] subcribeToAuthStateChanged currentUser ', this.currentUser)
           if (this.currentUser) {
             this.createUserAvatar(this.currentUser)
-            this.photo_profile_URL = this.imageRepoService.getImagePhotoUrl(this.currentUser.uid)
-            this.logger.log('[SIDEBAR] photo_profile_URL ', this.photo_profile_URL)
-            this.checkIfExistPhotoProfile(this.photo_profile_URL)
+            this.initializeUserPhoto(this.currentUser.uid)
             this.checkAndRemoveDashboardForegroundCount()
           }
         } else {
@@ -170,8 +169,23 @@ setQueryParamsForAll(queryParams: any) {
     })
   }
 
-  checkIfExistPhotoProfile(imageUrl) {
+  private initializeUserPhoto(uid: string) {
+    this.photo_profile_URL = this.imageRepoService.getImagePhotoUrl(uid)
+    this.logger.log('[SIDEBAR] photo_profile_URL ', this.photo_profile_URL)
+
+    const cachedPhotoExists = this.getCachedUserPhotoExists(uid)
+    if (cachedPhotoExists !== null) {
+      this.USER_PHOTO_PROFILE_EXIST = cachedPhotoExists
+      this.logger.log('[SIDEBAR] user photo existence restored from cache ', cachedPhotoExists)
+      return
+    }
+
+    this.checkIfExistPhotoProfile(uid, this.photo_profile_URL)
+  }
+
+  private checkIfExistPhotoProfile(uid: string, imageUrl: string) {
     this.verifyImageURL(imageUrl, (imageExists) => {
+      this.cacheUserPhotoExists(uid, imageExists)
 
       if (imageExists === true) {
         this.USER_PHOTO_PROFILE_EXIST = true;
@@ -182,6 +196,33 @@ setQueryParamsForAll(queryParams: any) {
         this.logger.log('[SIDEBAR] photo_profile_URL IMAGE EXIST ', imageExists)
       }
     })
+  }
+
+  private getCachedUserPhotoExists(uid: string): boolean | null {
+    try {
+      const cachedValue = localStorage.getItem(this.getUserPhotoExistsCacheKey(uid))
+      if (cachedValue === 'true') {
+        return true
+      }
+      if (cachedValue === 'false') {
+        return false
+      }
+    } catch (err) {
+      this.logger.error('[SIDEBAR] Error getting cached user photo existence', err)
+    }
+    return null
+  }
+
+  private cacheUserPhotoExists(uid: string, exists: boolean): void {
+    try {
+      localStorage.setItem(this.getUserPhotoExistsCacheKey(uid), String(exists))
+    } catch (err) {
+      this.logger.error('[SIDEBAR] Error caching user photo existence', err)
+    }
+  }
+
+  private getUserPhotoExistsCacheKey(uid: string): string {
+    return `${this.userPhotoExistsCachePrefix}${uid}`
   }
 
   checkAndRemoveDashboardForegroundCount(){
@@ -213,7 +254,7 @@ setQueryParamsForAll(queryParams: any) {
     }
   }
 
-  verifyImageURL(image_url, callBack) {
+  private verifyImageURL(image_url: string, callBack: (imageExists: boolean) => void): void {
     const img = new Image();
     img.src = image_url;
     img.onload = function () {
@@ -431,7 +472,5 @@ setQueryParamsForAll(queryParams: any) {
 
 
 }
-
-
 
 
