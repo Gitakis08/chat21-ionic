@@ -26,7 +26,7 @@ export function getOSCode(key: string, token: string): boolean {
 
 
 export function hasRole(projectUser: ProjectUser, role: string ): boolean {
-  let roles = ['owner', 'admin', 'agent'];
+  let roles = ['owner', 'admin', 'supervisor', 'agent'];
   if(roles.includes(projectUser.role)){
     return true
   }
