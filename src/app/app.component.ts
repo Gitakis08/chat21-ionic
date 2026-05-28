@@ -543,7 +543,7 @@ export class AppComponent implements OnInit {
       // this.currentUserService.initialize();
       this.chatManager.initialize();
       this.presenceService.initialize(this.tenant);
-      this.typingService.initialize(this.tenant);
+      this.typingService.initialize(this.tenant, this.appConfigProvider.getConfig().apiUrl);
 
       const pushEngine = this.appConfigProvider.getConfig().pushEngine
       const vap_id_Key = this.appConfigProvider.getConfig().firebaseConfig.vapidKey

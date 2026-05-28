@@ -1510,7 +1510,13 @@ export class ConversationDetailPage implements OnInit, OnDestroy, AfterViewInit 
 
       /** DO NOT SET TYPING if message is empty */
       if (message !== '') {
-        this.typingService.setTyping(this.conversationWith, message, idCurrentUser, userFullname)
+        if (this.supportMode) {
+          if (this.conversationWith.startsWith('support-group') && this.conv_type !== 'archived') {
+            this.typingService.setTyping(this.conversationWith, message, idCurrentUser, userFullname)
+          }
+        } else {
+          this.typingService.setTyping(this.conversationWith, message, idCurrentUser, userFullname)
+        }
       }
 
       // ----------------------------------------------------------
