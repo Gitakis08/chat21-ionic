@@ -8,6 +8,8 @@ import { LoggerService } from '../abstract/logger.service';
 import { LoggerInstance } from '../logger/loggerInstance';
 import { first } from 'rxjs/operators';
 
+const USER_PHOTO_EXISTS_CACHE_PREFIX = 'chat21:user-photo-exists:';
+
 // @Injectable({ providedIn: 'root' })
 @Injectable()
 export class NativeUploadService extends UploadService {
@@ -153,6 +155,7 @@ export class NativeUploadService extends UploadService {
             that.http.put(url, formData, requestOptions).pipe(first()).subscribe({
                 next: (data) => {
                     const downloadURL = this.getBaseUrl() + 'files?path=' + data['thumbnail'];
+                    this.cacheUserPhotoExists(userId, true);
                     resolve(downloadURL)
                     // that.BSStateUpload.next({upload: upload});
                 },
@@ -203,6 +206,7 @@ export class NativeUploadService extends UploadService {
             that.http.delete(url, requestOptions).pipe(first()).subscribe({
                 next: (data) => {
                     // const downloadURL = this.URL_TILEDESK_IMAGES + '?path=' + data['filename'];
+                    this.cacheUserPhotoExists(userId, false);
                     resolve(true)
                     // that.BSStateUpload.next({upload: upload});
                 },
@@ -240,5 +244,17 @@ export class NativeUploadService extends UploadService {
                 }
             });
         });
+    }
+
+    private cacheUserPhotoExists(userId: string, exists: boolean): void {
+        try {
+            localStorage.setItem(this.getUserPhotoExistsCacheKey(userId), String(exists));
+        } catch (err) {
+            this.logger.error('[NATIVE UPLOAD] Error caching user photo existence', err);
+        }
+    }
+
+    private getUserPhotoExistsCacheKey(userId: string): string {
+        return `${USER_PHOTO_EXISTS_CACHE_PREFIX}${userId}`;
     }
 }

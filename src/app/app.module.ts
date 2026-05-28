@@ -199,10 +199,10 @@ export function groupsHandlerFactory(http: HttpClient, chat21Service: Chat21Serv
   }
 }
 
-export function typingFactory(appConfig: AppConfigProvider) {
+export function typingFactory(appConfig: AppConfigProvider, http: HttpClient, appStorage: AppStorageService) {
   const config = appConfig.getConfig()
   if (config.chatEngine === CHAT_ENGINE_MQTT) {
-    return new MQTTTypingService();
+    return new MQTTTypingService(http, appStorage);
   } else {
     return new FirebaseTypingService();
   }
@@ -340,7 +340,7 @@ const appInitializerFn = (appConfig: AppConfigProvider, brandService: BrandServi
     {
       provide: TypingService,
       useFactory: typingFactory,
-      deps: [AppConfigProvider]
+      deps: [AppConfigProvider, HttpClient, AppStorageService]
     },
     {
       provide: UploadService,

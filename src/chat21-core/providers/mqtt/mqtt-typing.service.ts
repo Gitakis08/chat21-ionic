@@ -1,18 +1,15 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject } from 'rxjs';
+import { first } from 'rxjs/operators';
 
-// firebase
-import * as firebase from 'firebase/app';
-import 'firebase/messaging';
-import 'firebase/database';
-
-// services
-// import { EventsService } from './abstract/events-service';
 import { PresenceService } from '../abstract/presence.service';
 import { LoggerService } from 'src/chat21-core/providers/abstract/logger.service';
 import { LoggerInstance } from '../logger/loggerInstance';
-// utils
 import { TypingService } from '../abstract/typing.service';
-import { BehaviorSubject } from 'rxjs';
+import { AppStorageService } from '../abstract/app-storage.service';
+import { TIME_TYPING_MESSAGE } from 'src/chat21-core/utils/constants';
+import { getProjectIdSelectedConversation } from 'src/chat21-core/utils/utils';
 
 export class TypingModel {
 
@@ -30,67 +27,73 @@ export class TypingModel {
 
 export class MQTTTypingService extends TypingService {
 
-  // BehaviorSubject
   BSIsTyping: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   BSSetTyping: BehaviorSubject<any> = new BehaviorSubject<any>(null);
-  
-  // private params
+
   private tenant: string;
-  private urlNodeTypings: string;
-  private setTimeoutWritingMessages: any;
+  private serverBaseUrl: string;
+  private lastHeartbeatAt = 0;
   private logger: LoggerService = LoggerInstance.getInstance();
-  
+
   constructor(
-    // private events: EventsService
+    private http: HttpClient,
+    private appStorage: AppStorageService,
   ) {
     super();
   }
 
-  /** */
-  initialize(tenant: string) {
-    // this.tenant = this.getTenant();
+  initialize(tenant: string, serverBaseUrl?: string) {
     this.tenant = tenant;
-    this.logger.info('[MQTT-TYPING] initialize this.tenant', this.tenant);
-    this.urlNodeTypings = '/apps/' + this.tenant + '/typings/';
+    this.serverBaseUrl = serverBaseUrl;
+    this.logger.info('[MQTT-TYPING] initialize tenant', this.tenant, 'serverBaseUrl', this.serverBaseUrl);
   }
 
-  /** */
-  isTyping(idConversation: string, idUser: string) {
-    // const that = this;
-    // let urlTyping = this.urlNodeTypings + idConversation;
-    // if (idUser) {
-    //   urlTyping = this.urlNodeTypings + idUser + '/' + idConversation;
-    // }
-    // console.log('urlTyping: ', urlTyping);
-    // const ref = firebase.database().ref(urlTyping).orderByChild('timestamp').limitToLast(1);
-    // ref.on('child_changed', (childSnapshot) => {
-    //   console.log('urlTyping: ', childSnapshot.val());
-    //   that.events.publish('isTypings', childSnapshot);
-    // });
+  isTyping(_idConversation: string, _idUser: string) {
+    // Receive-side typing via MQTT/WebSocket is handled separately.
   }
 
-  /** */
-  setTyping(idConversation: string, message: string, idUser: string, userFullname: string) {
-    // const that = this;
-    // this.setTimeoutWritingMessages = setTimeout(() => {
+  setTyping(idConversation: string, message: string, _idUser: string, _userFullname: string) {
+    if (!idConversation || !idConversation.startsWith('support-group')) {
+      return;
+    }
 
-    //   let urlTyping = this.urlNodeTypings + idConversation;
-    //   if (idUser) {
-    //     urlTyping = this.urlNodeTypings + idUser + '/' + idConversation;
-    //   }
-    //   console.log('setWritingMessages:', urlTyping, userFullname);
-    //   const timestampData =  firebase.database.ServerValue.TIMESTAMP;
-    //   const precence = new TypingModel(timestampData, message, userFullname);
-    //   console.log('precence::::', precence);
-    //   firebase.database().ref(urlTyping).set(precence, ( error ) => {
-    //     if (error) {
-    //       console.log('ERRORE', error);
-    //     } else {
-    //       console.log('OK update typing');
-    //     }
-    //     that.events.publish('setTyping', precence, error);
-    //   });
-    // }, 500);
+    if (!message || message.trim() === '') {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - this.lastHeartbeatAt < TIME_TYPING_MESSAGE) {
+      return;
+    }
+
+    const projectId = getProjectIdSelectedConversation(idConversation);
+    if (!projectId || !this.serverBaseUrl) {
+      return;
+    }
+
+    const token = this.appStorage.getItem('tiledeskToken');
+    if (!token) {
+      return;
+    }
+
+    this.lastHeartbeatAt = now;
+    const url = `${this.serverBaseUrl}${projectId}/requests/${idConversation}/typing`;
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: token,
+      }),
+    };
+    const body = { waitTime: TIME_TYPING_MESSAGE };
+
+    this.http.post(url, body, httpOptions).pipe(first()).subscribe({
+      next: (res) => {
+        this.logger.debug('[MQTT-TYPING] typing heartbeat sent', res);
+      },
+      error: (err) => {
+        this.logger.error('[MQTT-TYPING] typing heartbeat error', err);
+      },
+    });
   }
 
 }
