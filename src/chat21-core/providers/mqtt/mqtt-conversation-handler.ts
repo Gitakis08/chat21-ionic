@@ -107,11 +107,12 @@ export class MQTTConversationHandler extends ConversationHandlerService {
                 this.logger.log('[MQTTConversationHandler] message added:', message, 'on topic:', topic);
                 const msg: MessageModel = message;        
                 
-                //allow to replace message in unknown status (pending status: '0')
-                if(message.attributes && message.attributes.tempUID){
+                // allow to replace message in unknown status (pending status: '0')
+                // tempUID is only for the logged-in user's outbound messages
+                if (message.attributes && message.attributes.tempUID && isSender(message.sender, this.senderId)) {
                     msg.uid = message.attributes.tempUID;
-                }else{
-                    msg.uid = message.message_id
+                } else {
+                    msg.uid = message.message_id;
                 }
 
                 this.addedMessage(msg);
