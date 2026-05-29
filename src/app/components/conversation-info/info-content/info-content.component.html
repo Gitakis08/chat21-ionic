@@ -59,7 +59,7 @@
     <ion-item class="conversation-topic-select" lines="none" *ngIf="availableTags.length > 0">
       <ion-label>Choose topic</ion-label>
       <ion-select
-        interface="popover"
+        interface="alert"
         placeholder="Select"
         [value]="selectedTagId"
         [disabled]="isUpdatingConversationTags"
