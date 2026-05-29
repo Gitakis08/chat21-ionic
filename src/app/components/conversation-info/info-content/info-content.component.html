@@ -30,6 +30,55 @@
     [isMobile]="isMobile">
   </app-info-group>
 
+  <div class="conversation-topic-panel" *ngIf="panelType === 'support-group-panel'">
+    <div class="conversation-topic-header">
+      <div>
+        <h3>Topic</h3>
+        <p>Conversation categorization</p>
+      </div>
+      <ion-spinner *ngIf="isLoadingConversationTags || isUpdatingConversationTags" name="crescent"></ion-spinner>
+    </div>
+
+    <div class="conversation-topic-tags" *ngIf="requestTags.length > 0; else noConversationTags">
+      <button
+        type="button"
+        class="conversation-topic-chip"
+        *ngFor="let tag of requestTags"
+        [disabled]="isUpdatingConversationTags"
+        (click)="removeConversationTag(tag)">
+        <span class="conversation-topic-color" [style.background]="tag.color || '#64748b'"></span>
+        <span>{{ tag.tag }}</span>
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+
+    <ng-template #noConversationTags>
+      <div class="conversation-topic-empty" *ngIf="!isLoadingConversationTags">No topic selected</div>
+    </ng-template>
+
+    <ion-item class="conversation-topic-select" lines="none" *ngIf="availableTags.length > 0">
+      <ion-label>Choose topic</ion-label>
+      <ion-select
+        interface="popover"
+        placeholder="Select"
+        [value]="selectedTagId"
+        [disabled]="isUpdatingConversationTags"
+        (ionChange)="addConversationTagFromEvent($event)">
+        <ion-select-option *ngFor="let tag of availableTags" [value]="tag._id">
+          {{ tag.tag }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div class="conversation-topic-empty" *ngIf="!isLoadingConversationTags && tagsList.length === 0">
+      No topics available
+    </div>
+
+    <div class="conversation-topic-error" *ngIf="conversationTagsError">
+      {{ conversationTagsError }}
+    </div>
+  </div>
+
   <app-info-support-group *ngIf="panelType === 'support-group-panel'"
     [urlConversationSupportGroup]="urlConversationSupportGroup">
   </app-info-support-group>

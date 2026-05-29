@@ -77,6 +77,57 @@ export class TiledeskService {
     }))
   }
 
+  public getTags(project_id: string): Observable<any[]> {
+    const url = this.SERVER_BASE_URL + project_id + '/tags/';
+    this.logger.log('[TILEDESK-SERVICE] - GET TAGS - URL ', url);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: this.tiledeskToken
+      })
+    };
+
+    return this.http.get<any[]>(url, httpOptions).pipe(map((res: any[]) => {
+      this.logger.log('[TILEDESK-SERVICE] - GET TAGS - RES ', res);
+      return res;
+    }))
+  }
+
+  public addRequestTags(project_id: string, request_id: string, tags: any[]): Observable<any> {
+    const url = this.SERVER_BASE_URL + project_id + '/requests/' + request_id + '/tag';
+    this.logger.log('[TILEDESK-SERVICE] - ADD REQUEST TAGS - URL ', url);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: this.tiledeskToken
+      })
+    };
+
+    return this.http.put(url, tags, httpOptions).pipe(map((res: any) => {
+      this.logger.log('[TILEDESK-SERVICE] - ADD REQUEST TAGS - RES ', res);
+      return res;
+    }))
+  }
+
+  public deleteRequestTag(project_id: string, request_id: string, tag_id: string): Observable<any> {
+    const url = this.SERVER_BASE_URL + project_id + '/requests/' + request_id + '/tag/' + tag_id;
+    this.logger.log('[TILEDESK-SERVICE] - DELETE REQUEST TAG - URL ', url);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: this.tiledeskToken
+      })
+    };
+
+    return this.http.delete(url, httpOptions).pipe(map((res: any) => {
+      this.logger.log('[TILEDESK-SERVICE] - DELETE REQUEST TAG - RES ', res);
+      return res;
+    }))
+  }
+
   public getProjectIdByConvRecipient(conversationWith: string ) {
     const lookupUrl = this.SERVER_BASE_URL + 'requests_util/lookup/id_project/' + conversationWith;
 

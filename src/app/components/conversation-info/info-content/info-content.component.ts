@@ -1,6 +1,7 @@
 import { TiledeskAuthService } from './../../../../chat21-core/providers/tiledesk/tiledesk-auth.service';
 import { TiledeskService } from '../../../services/tiledesk/tiledesk.service';
 import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
+import { forkJoin } from 'rxjs';
 // models
 import { UserModel } from 'src/chat21-core/models/user';
 import { ConversationModel } from 'src/chat21-core/models/conversation';
@@ -48,6 +49,13 @@ export class InfoContentComponent implements OnInit {
   public project_id: string
   private logger: LoggerService = LoggerInstance.getInstance();
   public IS_GROUP_PANEL: boolean = false
+  public tagsList: Array<any> = [];
+  public availableTags: Array<any> = [];
+  public requestTags: Array<any> = [];
+  public selectedTagId: string = null;
+  public isLoadingConversationTags: boolean = false;
+  public isUpdatingConversationTags: boolean = false;
+  public conversationTagsError: string = null;
 
   constructor(
     public archivedConversationsHandlerService: ArchivedConversationsHandlerService,
@@ -155,6 +163,7 @@ export class InfoContentComponent implements OnInit {
     this.logger.log('[INFO-CONTENT-COMP] - selectInfoContentTypeComponent - SUPPORT_GROUP - conversationWith start with "support-group"  ', this.conversationWith.startsWith("support-group"));
     this.urlConversationSupportGroup = '';
     this.setInfoSupportGroup();
+    this.loadConversationTagsData();
     this.panelType = 'support-group-panel';
     this.IS_GROUP_PANEL = false;
     this.logger.log('[INFO-CONTENT-COMP] - panelType IS_GROUP_PANEL: ', this.IS_GROUP_PANEL);
@@ -262,6 +271,106 @@ export class InfoContentComponent implements OnInit {
       this.urlConversationSupportGroup = this.sanitizer.bypassSecurityTrustResourceUrl(DASHBOARD_URL);
     }
     this.logger.log('[INFO-CONTENT-COMP] urlConversationSupportGroup:: ', this.urlConversationSupportGroup, this.conversationSelected);
+  }
+
+  loadConversationTagsData() {
+    this.tagsList = [];
+    this.availableTags = [];
+    this.requestTags = [];
+    this.selectedTagId = null;
+    this.conversationTagsError = null;
+
+    if (!this.project_id || !this.conversationWith) {
+      return;
+    }
+
+    this.isLoadingConversationTags = true;
+
+    forkJoin([
+      this.tiledeskService.getTags(this.project_id),
+      this.tiledeskService.getRequest(this.conversationWith, this.project_id)
+    ]).subscribe((res: any[]) => {
+      const tags = res[0];
+      const request = res[1];
+
+      this.tagsList = tags || [];
+      this.requestTags = request && request.tags ? request.tags : [];
+      this.refreshAvailableTags();
+    }, (error) => {
+      this.logger.error('[INFO-CONTENT-COMP] - LOAD CONVERSATION TAGS - ERROR ', error);
+      this.conversationTagsError = 'Unable to load conversation topics';
+      this.isLoadingConversationTags = false;
+    }, () => {
+      this.isLoadingConversationTags = false;
+    });
+  }
+
+  addConversationTag(tagId: string) {
+    if (!tagId || this.isUpdatingConversationTags) {
+      return;
+    }
+
+    const selectedTag = this.tagsList.find(tag => tag._id === tagId);
+    if (!selectedTag) {
+      this.selectedTagId = null;
+      return;
+    }
+
+    const alreadyAdded = this.requestTags.some(tag => tag.tag === selectedTag.tag);
+    if (alreadyAdded) {
+      this.selectedTagId = null;
+      return;
+    }
+
+    const tagPayload = [{
+      tag: selectedTag.tag,
+      color: selectedTag.color
+    }];
+
+    this.isUpdatingConversationTags = true;
+    this.conversationTagsError = null;
+
+    this.tiledeskService.addRequestTags(this.project_id, this.conversationWith, tagPayload).subscribe((updatedRequest: any) => {
+      this.requestTags = updatedRequest && updatedRequest.tags ? updatedRequest.tags : this.requestTags.concat(tagPayload);
+      this.selectedTagId = null;
+      this.refreshAvailableTags();
+    }, (error) => {
+      this.logger.error('[INFO-CONTENT-COMP] - ADD CONVERSATION TAG - ERROR ', error);
+      this.conversationTagsError = 'Unable to update conversation topic';
+      this.isUpdatingConversationTags = false;
+    }, () => {
+      this.isUpdatingConversationTags = false;
+    });
+  }
+
+  addConversationTagFromEvent(event: CustomEvent) {
+    const tagId = event && event.detail ? event.detail.value : null;
+    this.addConversationTag(tagId);
+  }
+
+  removeConversationTag(tag: any) {
+    if (!tag || !tag._id || this.isUpdatingConversationTags) {
+      return;
+    }
+
+    this.isUpdatingConversationTags = true;
+    this.conversationTagsError = null;
+
+    this.tiledeskService.deleteRequestTag(this.project_id, this.conversationWith, tag._id).subscribe((updatedRequest: any) => {
+      this.requestTags = updatedRequest && updatedRequest.tags ? updatedRequest.tags : this.requestTags.filter(requestTag => requestTag._id !== tag._id);
+      this.refreshAvailableTags();
+    }, (error) => {
+      this.logger.error('[INFO-CONTENT-COMP] - REMOVE CONVERSATION TAG - ERROR ', error);
+      this.conversationTagsError = 'Unable to remove conversation topic';
+      this.isUpdatingConversationTags = false;
+    }, () => {
+      this.isUpdatingConversationTags = false;
+    });
+  }
+
+  refreshAvailableTags() {
+    const selectedTagNames = (this.requestTags || []).map(tag => tag.tag);
+    this.availableTags = (this.tagsList || []).filter(tag => selectedTagNames.indexOf(tag.tag) === -1);
   }
 
 
