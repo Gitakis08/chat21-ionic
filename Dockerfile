@@ -15,7 +15,7 @@ RUN mkdir -p ./www
 
 RUN cordova platform add browser@latest
 
-RUN ionic cordova build browser
+RUN ionic cordova build browser --configuration production
 RUN sed -i 's#<script src="cordova.js"></script>##g; s#<script src="cordova.js" defer></script>##g' /app/platforms/browser/www/index.html
 
 ### STAGE 2: Setup ###
@@ -39,5 +39,4 @@ WORKDIR /usr/share/nginx/html
 RUN echo "Chat21 Ionic Started!!"
 
 CMD ["/bin/sh",  "-c",  "envsubst < /usr/share/nginx/html/chat-config-template.json > /usr/share/nginx/html/chat-config.json && envsubst < /usr/share/nginx/html/firebase-messaging-sw-template.js > /usr/share/nginx/html/firebase-messaging-sw.js && exec nginx -g 'daemon off;'"]
-
 
