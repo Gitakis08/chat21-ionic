@@ -45,7 +45,7 @@ export class MQTTTypingService extends TypingService {
   initialize(tenant: string, serverBaseUrl?: string) {
     this.tenant = tenant;
     this.serverBaseUrl = serverBaseUrl;
-    this.logger.info('[MQTT-TYPING] initialize tenant', this.tenant, 'serverBaseUrl', this.serverBaseUrl);
+    this.logger.debug('[MQTT-TYPING] initialize tenant', this.tenant, 'serverBaseUrl', this.serverBaseUrl);
   }
 
   isTyping(_idConversation: string, _idUser: string) {

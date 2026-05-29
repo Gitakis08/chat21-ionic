@@ -11,7 +11,7 @@ export class CustomLogger implements LoggerService {
 
     //private variables
     // private logger: NGXLogger 
-    private logLevel: number = LogLevel.DEBUG;
+    private logLevel: number = LogLevel.ERROR;
     private isLogEnabled: boolean = true;
 
     constructor(private logger: NGXLogger) { }
@@ -19,7 +19,10 @@ export class CustomLogger implements LoggerService {
     setLoggerConfig(isLogEnabled: boolean, logLevel: string) {
         this.isLogEnabled = isLogEnabled;
         if (logLevel) {
-            this.logLevel = LogLevel[logLevel.toUpperCase()];
+            const normalizedLogLevel = logLevel.toUpperCase();
+            this.logLevel = LogLevel[normalizedLogLevel] !== undefined
+                ? LogLevel[normalizedLogLevel]
+                : LogLevel.ERROR;
             // console.log('LoggerService this.logLevel  ', this.logLevel)
         }
     }

@@ -51,7 +51,7 @@ export class MQTTAuthService extends MessagingAuthService {
   initialize() {
     this.SERVER_BASE_URL = this.getBaseUrl();
     this.URL_TILEDESK_CREATE_CUSTOM_TOKEN = this.SERVER_BASE_URL + 'chat21/native/auth/createCustomToken';
-    this.logger.log('[MQTTAuthService] initialize ');
+    this.logger.debug('[MQTTAuthService] initialize ');
     // this.checkIsAuth();
     // this.onAuthStateChanged();
   }

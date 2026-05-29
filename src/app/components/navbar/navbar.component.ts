@@ -123,7 +123,7 @@ export class NavbarComponent implements OnInit {
         this.USER_ROLE = project.role;
         this.projectUser = await this.projectUsersService.getProjectUserByProjectId(project.id_project.id)
         this.roles = this.checkRoles()
-        console.log('[SIDEBAR] roles ', this.roles)
+        this.logger.debug('[SIDEBAR] roles ', this.roles)
       }
     })
   }
@@ -176,7 +176,6 @@ export class NavbarComponent implements OnInit {
     }else if(event === 'addProject'){
       url = baseUrl + '#/create-new-project/' + '?token=' + this.tiledeskToken
     }
-    console.log('onClickDropdownOption-->', url)
     window.open(url, '_blank');
   }
 

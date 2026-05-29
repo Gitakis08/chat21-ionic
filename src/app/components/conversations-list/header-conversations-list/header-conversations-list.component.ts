@@ -66,7 +66,6 @@ export class HeaderConversationsList implements OnInit {
   // }
 
   ngOnInit() {
-    console.log('DDP HEADER SUPPORT MODE ', this.roles)
   }
 
   // START @Output() //

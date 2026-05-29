@@ -484,7 +484,7 @@ export class ConversationListPage implements OnInit {
 
   listenGoOnline() {
     this.events.subscribe('go:online', (goonline) => {
-      this.logger.info('[CONVS-LIST-PAGE] - listen To go:online - goonline',goonline)
+      this.logger.debug('[CONVS-LIST-PAGE] - listen To go:online - goonline',goonline)
       // this.events.unsubscribe('profileInfoButtonClick:logout')
       if (goonline === true) {
         this.displayNewConvsItem = true
@@ -494,7 +494,7 @@ export class ConversationListPage implements OnInit {
 
   listenGoOffline() {
     this.events.subscribe('go:offline', (offline) => {
-      this.logger.info('[CONVS-LIST-PAGE] - listen To go:offline - offline',offline)
+      this.logger.debug('[CONVS-LIST-PAGE] - listen To go:offline - offline',offline)
       // this.events.unsubscribe('profileInfoButtonClick:logout')
       if (offline === true) {
         this.displayNewConvsItem = false
@@ -504,7 +504,7 @@ export class ConversationListPage implements OnInit {
 
   listenToLogoutEvent() {
     this.events.subscribe('profileInfoButtonClick:logout', (hasclickedlogout) => {
-        this.logger.info('[CONVS-LIST-PAGE] - listenToLogoutEvent - hasclickedlogout',hasclickedlogout)
+        this.logger.debug('[CONVS-LIST-PAGE] - listenToLogoutEvent - hasclickedlogout',hasclickedlogout)
 
         this.conversations = []
         this.conversationsHandlerService.conversations = []

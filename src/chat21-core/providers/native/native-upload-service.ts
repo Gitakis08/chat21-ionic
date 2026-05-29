@@ -29,7 +29,7 @@ export class NativeUploadService extends UploadService {
     }
 
     initialize(projectId?: string): void {
-        this.logger.info('[NATIVE UPLOAD] initialize', this.getBaseUrl())
+        this.logger.debug('[NATIVE UPLOAD] initialize', this.getBaseUrl())
         if (projectId) {
             this.URL_TILEDESK_FILE = this.getBaseUrl() + projectId + '/files'
         }

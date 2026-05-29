@@ -87,7 +87,7 @@ export class FirebaseNotifications extends NotificationsService {
                     return messaging.getToken({ vapidKey: this.vapidkey })
                 }
             }).then(FCMtoken => {
-                this.logger.log('[FIREBASE-NOTIFICATIONS] >>>> requestPermission FCMtoken', FCMtoken)
+                this.logger.debug('[FIREBASE-NOTIFICATIONS] >>>> requestPermission FCM token received')
                 // Save FCM Token in Firebase
                 this.FCMcurrentToken = FCMtoken;
                 this.updateToken(FCMtoken, currentUserUid)
@@ -103,14 +103,14 @@ export class FirebaseNotifications extends NotificationsService {
                   // Register your new token in your back-end if you want
                   // backend.registerToken(token);
                   this.FCMcurrentToken = FCMtoken;
-                  console.log("[MQTTNotificationService] FCM: onTokenRefresh --->", FCMtoken);
+                  this.logger.debug("[MQTTNotificationService] FCM: token refreshed");
                   this.updateToken(FCMtoken, currentUserUid)
                 });
                 this.fcm.requestPushPermission().then((permission) => {
-                  console.log("[MQTTNotificationService] FCM: requestPushPermission --->", permission);
+                  this.logger.debug("[MQTTNotificationService] FCM: requestPushPermission", permission);
                   if(permission === true){
                     this.fcm.getToken().then(FCMtoken => {
-                      console.log("[MQTTNotificationService] FCM: getToken --->", FCMtoken);
+                      this.logger.debug("[MQTTNotificationService] FCM: token received");
                       this.FCMcurrentToken = FCMtoken;
                       this.updateToken(FCMtoken, currentUserUid)
                     });

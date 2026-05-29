@@ -185,9 +185,22 @@ export class WebSocketJs {
   // @ send - 
   // -----------------------------------------------------------------------------------------------------
   send(initialMessage, calling_method) {
-    // this.logger.log("[WEBSOCKET-JS] - SEND - INIZIAL-MSG ", initialMessage, " CALLED BY ", calling_method);
+    if (!this.ws) {
+      this.logger.debug('[WEBSOCKET-JS] - SEND skipped (no socket)', calling_method);
+      return;
+    }
 
-    this.ws.send(initialMessage);
+    if (this.ws.readyState === 1) {
+      this.ws.send(initialMessage);
+      return;
+    }
+
+    if (this.ws.readyState === 0) {
+      this.logger.debug('[WEBSOCKET-JS] - SEND skipped (connecting)', calling_method);
+      return;
+    }
+
+    this.logger.debug('[WEBSOCKET-JS] - SEND skipped (readyState:', this.ws.readyState, ')', calling_method);
   }
 
 
@@ -197,7 +210,7 @@ export class WebSocketJs {
   close() {
     this.topics = [];
     this.callbacks = [];
-    this.logger.log("[WEBSOCKET-JS] - CALLED CLOSE - TOPICS ", this.topics, ' - CALLLBACKS ', this.callbacks);
+    this.logger.debug("[WEBSOCKET-JS] - CALLED CLOSE - TOPICS ", this.topics, ' - CALLLBACKS ', this.callbacks);
 
     if (this.ws) {
       this.ws.onclose = function () { }; // disable onclose handler first
@@ -210,12 +223,12 @@ export class WebSocketJs {
   // @ Resubscribe
   // -----------------------------------------------------------------------------------------------------
   resubscribe() {
-    this.logger.log("[WEBSOCKET-JS] - RESUBSCRIBE - TO TOPICS ", this.topics);
-    this.logger.log("[WEBSOCKET-JS] - RESUBSCRIBE - CALLBACKS ", this.callbacks);
+    this.logger.debug("[WEBSOCKET-JS] - RESUBSCRIBE - TO TOPICS ", this.topics);
+    this.logger.debug("[WEBSOCKET-JS] - RESUBSCRIBE - CALLBACKS ", this.callbacks);
 
     if (this.topics.length > 0) {
       this.topics.forEach(topic => {
-        this.logger.log("[WEBSOCKET-JS] - RESUBSCRIBE - SUBDCRIBE TO TOPICS ", topic);
+        this.logger.debug("[WEBSOCKET-JS] - RESUBSCRIBE - SUBDCRIBE TO TOPICS ", topic);
         this.subscribe(topic); // nn fa sudbcribe 
       });
     }
@@ -279,19 +292,19 @@ export class WebSocketJs {
       // onmessage Ottieni il battito cardiaco restituito per indicare che la connessione è normale
       if (this.ws && this.ws.readyState == 1) {
 
-        this.logger.log("[WEBSOCKET-JS] - HEART-START - SEND PING-MSG");
+        this.logger.debug("[WEBSOCKET-JS] - HEART-START - SEND PING-MSG");
 
         this.send(JSON.stringify(this.pingMsg), 'HEART-START')
 
       } else if (this.ws) {
 
-        this.logger.log("[WEBSOCKET-JS] - HEART-START - TRY TO SEND PING-MSG BUT READY STATE IS ", this.ws.readyState);
+        this.logger.debug("[WEBSOCKET-JS] - HEART-START - TRY TO SEND PING-MSG BUT READY STATE IS ", this.ws.readyState);
 
       }
 
       // Se non viene ripristinato dopo un determinato periodo di tempo, il backend viene attivamente disconnesso
       this.pongTimeoutId = setTimeout(() => {
-   this.logger.log("[WEBSOCKET-JS] - HEART-START - PONG-TIMEOUT-ID  - CLOSE WS ");
+   this.logger.debug("[WEBSOCKET-JS] - HEART-START - PONG-TIMEOUT-ID  - CLOSE WS ");
         // se onclose Si esibirà reconnect，Eseguiamo ws.close() Bene, se lo esegui direttamente reconnect Si innescherà onclose Causa riconnessione due volte
         this.ws.close();
       }, this.pongTimeout);
@@ -328,10 +341,9 @@ export class WebSocketJs {
     // this.sendingMessages = [];//new Map();
     // this.data = [];
     // this.init(this.sendMesagesInSendingArray);
-    this.logger.log("[WEBSOCKET-JS] - CALLING INIT - url ", this.url);
-    this.logger.log("[WEBSOCKET-JS] - CALLING INIT - topics ", this.topics);
-    this.logger.log("[WEBSOCKET-JS] - CALLING INIT - url ", this.url);
-    this.logger.log("[WEBSOCKET-JS] - CALLING INIT - callbacks ", this.callbacks);
+    this.logger.debug("[WEBSOCKET-JS] - CALLING INIT - url ", this.url);
+    this.logger.debug("[WEBSOCKET-JS] - CALLING INIT - topics ", this.topics);
+    this.logger.debug("[WEBSOCKET-JS] - CALLING INIT - callbacks ", this.callbacks);
 
 
     var that = this;
@@ -357,7 +369,7 @@ export class WebSocketJs {
       // @ onopen
       // -----------------------------------------------------------------------------------------------------
       that.ws.onopen = function (e) {
-        that.logger.log('[WEBSOCKET-JS] - websocket is connected ...', e);
+        that.logger.debug('[WEBSOCKET-JS] - websocket is connected ...', e);
 
         // -----------------
         // @ heartCheck
@@ -379,7 +391,7 @@ export class WebSocketJs {
       // @ onclose
       // -----------------------------------------------------------------------------------------------------
       that.ws.onclose = function (e) {
-        that.logger.log('[WEBSOCKET-JS] websocket IS CLOSED ... Try to reconnect in 3 seconds ', e);
+        that.logger.debug('[WEBSOCKET-JS] websocket IS CLOSED ... Try to reconnect in 3 seconds ', e);
 
         // this.logger.log('% »»» WebSocketJs - websocket onclose this.userHasClosed ', that.userHasClosed);
         // https://stackoverflow.com/questions/3780511/reconnection-of-client-when-server-reboots-in-websocket
@@ -391,7 +403,7 @@ export class WebSocketJs {
 
         setTimeout(function () {
           that.init(url, onCreate, onUpdate, onData, onOpen, function () {
-            that.logger.log('[WEBSOCKET-JS] websocket IS CLOSED ... CALLING RESUSCRIBE ');
+            that.logger.debug('[WEBSOCKET-JS] websocket IS CLOSED ... CALLING RESUSCRIBE ');
             that.resubscribe();
           }, that.topics, that.callbacks);
         }, 3000);

@@ -1,7 +1,7 @@
 export const environment = {
     t2y12PruGU9wUtEGzBJfolMIgK:"CAR:F-PAY:F-ANA:F-ACT:F-APP:F",
     version: require('../../package.json').version,
-    production: false,
+    production: true,
     remoteConfig: true,
     remoteConfigUrl: './chat-config.json',
     remoteContactsUrl: '',

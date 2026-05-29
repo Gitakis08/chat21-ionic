@@ -36,9 +36,6 @@ export class Chat21Service {
     if (!this.chatClient) {
       this.chatClient = new Chat21Client(this._config);
     }
-    else {
-      console.log("Did you try again to create a Chat21Client istance?");
-    }
     // console.log("chatClient init. ID:", this.chatClient.client_id)
   }
 }

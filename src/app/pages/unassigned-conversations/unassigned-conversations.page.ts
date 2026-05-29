@@ -308,7 +308,7 @@ export class UnassignedConversationsPage implements OnInit, OnChanges {
     link.type = 'text/css';
     link.media='all';
     
-    console.log('linkkkk', link, iframeWin.contentWindow.document)
+    this.logger.debug('[UNASSIGNED-CONVS-PAGE] applying iframe style', link);
     let head = iframeWin.contentWindow.document.getElementsByTagName('head')[0];
     head.appendChild(link);
     iframeWin.contentWindow.document.body.classList.add(data.type) //ADD class to body element as theme type ('light', 'dark', 'custom')

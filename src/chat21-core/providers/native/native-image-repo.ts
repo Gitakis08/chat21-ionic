@@ -31,7 +31,7 @@ export class NativeImageRepoService extends ImageRepoService {
     checkImageExists(url: string, callback: (exist: boolean) => void): void {
         this.http.get(url).subscribe( res => {
             callback(true)
-        },(error) => { console.log('errorrrrrr', url, error);callback(false)})
+        }, () => callback(false))
     }
 
 }

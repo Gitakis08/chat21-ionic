@@ -57,7 +57,7 @@ export class CreateCannedResponsePage implements OnInit {
   ngOnInit() {
     // this.getCurrentProjectId();
     // console.log('[CREATE-CANNED-RES] - conversationWith ', this.conversationWith)
-     console.log('[CREATE-CANNED-RES] - message ', this.message, this.conversationWith)
+    this.logger.debug('[CREATE-CANNED-RES] - message ', this.message, this.conversationWith)
     this.getCurrentProjectId(this.conversationWith);
 
 

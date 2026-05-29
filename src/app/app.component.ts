@@ -287,13 +287,13 @@ export class AppComponent implements OnInit {
         this.version = environment.version;
      
         this.logger.setLoggerConfig(true, this.g.logLevel)
-        this.logger.info('[APP-COMP] logLevel: ', this.g.logLevel);
+        this.logger.debug('[APP-COMP] logLevel: ', this.g.logLevel);
         this.tabTitle = document.title;
         // this.appStorageService.initialize(environment.storage_prefix, this.persistence, '') /** moved to globals-settings.service */
     
         this.tenant = this.g.tenant;
         this.persistence = this.g.persistence
-        this.logger.info('[APP-COMP] appconfig firebaseConfig tenant: ', this.tenant);
+        this.logger.debug('[APP-COMP] appconfig firebaseConfig tenant: ', this.tenant);
         this.notificationsEnabled = true;
         this.zone = new NgZone({}); // a cosa serve?
 
@@ -308,12 +308,12 @@ export class AppComponent implements OnInit {
     if (token) {
       // this.isOnline = false;
       // this.logger.log('[APP-COMP] ngOnInit AUTOLOGIN token get with this.isOnline  ', this.isOnline)
-      this.logger.log('[APP-COMP] ngOnInit AUTOLOGIN token get with getParameterByName  ', token)
+      this.logger.log('[APP-COMP] ngOnInit AUTOLOGIN token found in query params')
       // save token in local storage then 
 
       const storedToken = localStorage.getItem('tiledesk_token')
-      this.logger.log('[APP-COMP] ngOnInit AUTOLOGIN storedToken ', storedToken)
-      this.logger.log('[APP-COMP] ngOnInit AUTOLOGIN SAVE THE PARAMS TOKEN ', token)
+      this.logger.log('[APP-COMP] ngOnInit AUTOLOGIN stored token exists ', !!storedToken)
+      this.logger.log('[APP-COMP] ngOnInit AUTOLOGIN save params token')
       if (storedToken !== token) {
         localStorage.setItem('tiledesk_token', token)
       } else {
@@ -425,7 +425,7 @@ export class AppComponent implements OnInit {
   }
 
   async loadStyle(data){
-    console.log('[APP-COMPO] event: style ...', data)
+    this.logger.debug('[APP-COMPO] event: style ...', data)
     localStorage.setItem('custom_style', JSON.stringify(data))
     if(!data || !data.parameter){
 
@@ -509,7 +509,7 @@ export class AppComponent implements OnInit {
 
   signInWithCustomToken(token) {
     // this.isOnline = false;
-    this.logger.log('[APP-COMP] SIGNINWITHCUSTOMTOKEN  token', token)
+    this.logger.log('[APP-COMP] SIGNINWITHCUSTOMTOKEN token received')
     this.tiledeskAuthService.signInWithCustomToken(token).then((data: any) => {
         this.logger.log('[APP-COMP] SIGNINWITHCUSTOMTOKEN AUTLOGIN user', data.user)
         this.messagingAuthService.createCustomToken(data.token)
@@ -518,24 +518,28 @@ export class AppComponent implements OnInit {
     })
   }
 
+  private isNativePlatform(): boolean {
+    return this.platform.is('hybrid') || this.platform.is('cordova') || this.platform.is('capacitor');
+  }
+
   initializeApp(calledby: string) {
 
-    if (!this.platform.is('desktop')) {
+    if (!this.platform.is('desktop') && this.isNativePlatform()) {
       this.splashScreen.show();
     }
 
     this.platform.ready().then(() => {
       let platform = this.getPlatformName();
 
-      if (this.platform.is('hybrid') || this.platform.is('cordova') || this.platform.is('capacitor')) {
+      if (this.isNativePlatform()) {
         this.initDeeplinks();
       }
       // this.setLanguage();
 
-      if (this.splashScreen) {
+      if (this.isNativePlatform()) {
         this.splashScreen.hide();
+        this.statusBar.styleLightContent();
       }
-      this.statusBar.styleLightContent();
       this.navService.init(this.sidebarNav, this.detailNav);
       this.tiledeskAuthService.initialize(this.appConfigProvider.getConfig().apiUrl);
       this.messagingAuthService.initialize();
@@ -606,7 +610,7 @@ export class AppComponent implements OnInit {
         this.logger.log('[APP-COMP] getRouteParamsAndSetLoggerConfig - log level get from queryParams: ', params.logLevel)
         this.logger.setLoggerConfig(true, params.logLevel)
       } else {
-        this.logger.info('[APP-COMP] getRouteParamsAndSetLoggerConfig - log level get from appconfig: ', appconfig.logLevel)
+        this.logger.debug('[APP-COMP] getRouteParamsAndSetLoggerConfig - log level get from appconfig: ', appconfig.logLevel)
         this.logger.setLoggerConfig(true, appconfig.logLevel)
       }
     });
@@ -1112,7 +1116,7 @@ export class AppComponent implements OnInit {
           this.goOffLine();
           this.triggerOnAuthStateChanged(state)
         } else if(state && state === AUTH_STATE_CLOSE ){
-          this.logger.info('[APP-COMP] CLOSE - CHANNEL CLOSED: ', this.chatManager);
+          this.logger.debug('[APP-COMP] CLOSE - CHANNEL CLOSED: ', this.chatManager);
           // let IDConv= null
           // if(this.route &&  this.route.snapshot && this.route.snapshot.firstChild){
           //   IDConv = this.route.snapshot.firstChild.paramMap.get('IDConv');
@@ -1445,7 +1449,7 @@ export class AppComponent implements OnInit {
     this.conversationsHandlerService.subscribeToConversations(null, () => {
       // this.logger.log('[APP-COMP] - CONVS - INIT CONV')
       const conversations = this.conversationsHandlerService.conversations;
-      this.logger.info('initialize FROM [APP-COMP] - [APP-COMP]-CONVS - INIT CONV CONVS', conversations)
+      this.logger.debug('initialize FROM [APP-COMP] - [APP-COMP]-CONVS - INIT CONV CONVS', conversations)
       // this.logger.printDebug('SubscribeToConversations (convs-list-page) - conversations')
       if (!conversations || conversations.length === 0) {
         // that.showPlaceholder = true;
@@ -1494,7 +1498,7 @@ export class AppComponent implements OnInit {
        this.fcm.onNotification().subscribe(data => {
           let pageUrl = 'conversation-detail/'
           if (data.wasTapped) {
-            console.log("FCM: Received in background", JSON.stringify(data));
+            this.logger.debug("FCM: Received in background", data);
             let IDConv = data.channel_type === "group" ? data.recipient : data.sender;
             let FullNameConv = data.sender_fullname
             let Convtype = 'active'
@@ -1505,7 +1509,7 @@ export class AppComponent implements OnInit {
             // replace(/\(/g, '%28').replace(/\)/g, '%29') -> used for the encoder of any round brackets
             this.router.navigateByUrl(pageUrl.replace(/\(/g, '%28').replace(/\)/g, '%29'));
           } else {
-            console.log("FCM: Received in foreground", JSON.stringify(data));
+            this.logger.debug("FCM: Received in foreground", data);
             // let IDConv = data.recipient
             // let FullNameConv = data.sender_fullname
             // let Convtype = 'active'

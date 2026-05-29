@@ -27,22 +27,17 @@ export class Toast {
           side: 'start',
           icon: 'star',
           text: 'Favorite',
-          handler: () => {
-            console.log('Favorite clicked');
-          },
+          handler: () => {},
         },
         {
           text: 'Done',
           role: 'cancel',
-          handler: () => {
-            console.log('Cancel clicked');
-          },
+          handler: () => {},
         },
       ],
     });
     await toast.present();
 
-    const { role } = await toast.onDidDismiss();
-    console.log('onDidDismiss resolved with role', role);
+    await toast.onDidDismiss();
   }
 }

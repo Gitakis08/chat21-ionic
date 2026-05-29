@@ -51,7 +51,6 @@ export class MapsPage implements OnInit {
         streetViewControl: false
       }
     );
-    console.log("*** MAPS *** ", map);
     const card = document.getElementById("pac-card") as HTMLElement;
     const input = document.getElementById("pac-input") as HTMLInputElement;
     
@@ -96,8 +95,6 @@ export class MapsPage implements OnInit {
       marker.setVisible(false);
   
       const place = autocomplete.getPlace();
-
-      console.log("*** MAP *** place: ", place)
 
       this.selected_place = {
         name: place.name,
@@ -178,7 +175,6 @@ export class MapsPage implements OnInit {
   }
 
   shareLocation() {
-    console.log("share location called")
     this.viewCtrl.dismiss(this.selected_place);
   }
 

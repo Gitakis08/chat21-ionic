@@ -35,7 +35,7 @@ import { avatarPlaceholder, getColorBck } from 'src/chat21-core/utils/utils-user
      * inizializzo groups handler
      */
     initialize(tenant: string, loggedUserId: string): void {
-        this.logger.log('[MQTT-GROUPS-HANDLER] initialize');
+        this.logger.debug('[MQTT-GROUPS-HANDLER] initialize');
         this.tenant = tenant;
         this.loggedUserId = loggedUserId;
     }

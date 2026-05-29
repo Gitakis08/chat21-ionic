@@ -530,7 +530,7 @@ export class ConversationDetailPage implements OnInit, OnDestroy, AfterViewInit 
   }
 
   _getProjectIdByConversationWith(conversationWith: string) {
-    console.log('[CONVS-DETAIL] - _getProjectIdByConversationWith conversationWith', conversationWith, this.channelType)
+    this.logger.debug('[CONVS-DETAIL] - _getProjectIdByConversationWith conversationWith', conversationWith, this.channelType)
     if (this.channelType !== TYPE_DIRECT && !this.conversationWith.startsWith('group-')) {
       this.tiledeskService.getProjectIdByConvRecipient(conversationWith).subscribe((res) => {
         this.logger.log('[CONVS-DETAIL] - GET PROJECTID BY CONV RECIPIENT RES + projectId', res, res.id_project)

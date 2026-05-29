@@ -53,7 +53,7 @@ export class MQTTNotifications extends NotificationsService {
             return messaging.getToken({ vapidKey: this.vapidkey })
         }
       }).then(FCMtoken => {
-        this.logger.log('[MQTTNotificationService] >>>> requestPermission FCMtoken', FCMtoken)
+        this.logger.debug('[MQTTNotificationService] >>>> requestPermission FCM token received')
         // Save FCM Token in Chat21
         this.FCMcurrentToken = FCMtoken;
         this.saveToken(FCMtoken, currentUserUid)
@@ -69,14 +69,14 @@ export class MQTTNotifications extends NotificationsService {
           // Register your new token in your back-end if you want
           // backend.registerToken(token);
           this.FCMcurrentToken = FCMtoken;
-          console.log("[MQTTNotificationService] FCM: onTokenRefresh --->", FCMtoken);
+          this.logger.debug("[MQTTNotificationService] FCM: token refreshed");
           this.saveToken(FCMtoken, currentUserUid)
         });
         this.fcm.requestPushPermission().then((permission) => {
-          console.log("[MQTTNotificationService] FCM: requestPushPermission --->", permission);
+          this.logger.debug("[MQTTNotificationService] FCM: requestPushPermission", permission);
           if(permission === true){
             this.fcm.getToken().then(FCMtoken => {
-              console.log("[MQTTNotificationService] FCM: getToken --->", FCMtoken);
+              this.logger.debug("[MQTTNotificationService] FCM: token received");
               this.FCMcurrentToken = FCMtoken;
               this.saveToken(FCMtoken, currentUserUid)
             });
