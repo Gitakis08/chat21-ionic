@@ -56,6 +56,10 @@ export class InfoContentComponent implements OnInit {
   public isLoadingConversationTags: boolean = false;
   public isUpdatingConversationTags: boolean = false;
   public conversationTagsError: string = null;
+  public topicSelectInterfaceOptions = {
+    cssClass: 'conversation-topic-alert',
+    header: 'Choose topic'
+  };
 
   constructor(
     public archivedConversationsHandlerService: ArchivedConversationsHandlerService,

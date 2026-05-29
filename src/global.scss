@@ -827,5 +827,26 @@ ul.dropdown-menu > li > a {
 }
   
 
+ion-alert.conversation-topic-alert {
+    --width: min(520px, calc(100vw - 32px));
+    --max-width: min(520px, calc(100vw - 32px));
+}
+
+ion-alert.conversation-topic-alert .alert-wrapper {
+    width: min(520px, calc(100vw - 32px));
+    max-width: min(520px, calc(100vw - 32px));
+}
+
+ion-alert.conversation-topic-alert .alert-radio-group {
+    max-height: 60vh;
+}
+
+ion-alert.conversation-topic-alert .alert-radio-label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 20px;
+}
+
 
 

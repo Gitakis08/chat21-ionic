@@ -60,6 +60,7 @@
       <ion-label>Choose topic</ion-label>
       <ion-select
         interface="alert"
+        [interfaceOptions]="topicSelectInterfaceOptions"
         placeholder="Select"
         [value]="selectedTagId"
         [disabled]="isUpdatingConversationTags"
